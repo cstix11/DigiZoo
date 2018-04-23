@@ -171,7 +171,7 @@ public class DigiZooApp {
                         break;
                     }
                     type = zoo.getPet(name).getType();
-                    while (true) { // Loop through pet's options - broken by typing "Quit" (hard STOP) or selecting Exit (soft BREAK)
+                    petControl: while (true) { // Loop through pet's options - broken by typing "Quit" (hard STOP) or selecting Exit (soft BREAK)
                         System.out.println(zoo.getPetInfo(name));
                         System.out.println("\t1) Exit" +
                                 "\n\t2) Feed");
@@ -183,48 +183,54 @@ public class DigiZooApp {
                         }
                         in = input.nextLine();
                         quitChecker(in);
-                        if (in.equals("1")) { // If exit selected, go back to main menu
-                            level = "main";
-                            break;
-                        } else if (zoo.doTask()) { // If task available
-                            if (zoo.getPet(name).sleeping) {
-                                System.out.println(name + " is sleeping. Try again later.");
-                            } else {
-                                switch (in) {
-                                    case "2":
+                        if (zoo.getPet(name).sleeping) {
+                            System.out.println(name + " is sleeping. Try again later.");
+                        } else {
+                            switch (in) {
+                                case "1":
+                                    level = "main";
+                                    break petControl;
+                                case "2":
+                                    if (zoo.doTask()) {
                                         zoo.getPet(name).feed();
                                         System.out.println(name + " will be fed on the next turn");
-                                        break;
-                                    case "3":
-                                        try {                                           // Because the zoo class refers to
-                                            if (type.equals("Cat")) {                   // all pets as VirtualPet objects,
-                                                Cat cat = (Cat) zoo.getPet(name);       // cats and dogs must be downcast
-                                                cat.play();                             // in order to do their specific
-                                            } else if (type.equals("Dog")) {            // tasks.
-                                                Dog dog = (Dog) zoo.getPet(name);
-                                                dog.play();
-                                            }
-                                            System.out.println(name + " will be played with next turn");
-                                        } catch (ClassCastException e) {
-                                            e.printStackTrace();
-                                            System.exit(1);
+                                    }
+                                    break;
+                                case "3":
+                                    if (type.equals("Cat")) {           // Because the zoo class refers to
+                                        if (zoo.doTask()) {
+                                            Cat cat = (Cat) zoo.getPet(name);               // all pets as VirtualPet objects,
+                                            cat.play();                                     // cats and dogs must be downcast
+                                        } else {
+                                            System.out.println("No tasks remain for this turn");
+                                            break;
                                         }
+                                    } else if (type.equals("Dog")) {    // in order to do their specific
+                                        if (zoo.doTask()) {
+                                            Dog dog = (Dog) zoo.getPet(name);               // tasks.
+                                            dog.play();
+                                        } else {
+                                            System.out.println("No tasks remain for this turn");
+                                            break;
+                                        }
+                                    } else {
                                         break;
-                                    case "4":
-                                        try {
+                                    }
+                                    System.out.println(name + " will be played with next turn");
+                                    break;
+                                case "4":
+                                    if (type.equals("Dog")) {
+                                        if (zoo.doTask()) {
                                             Dog dog = (Dog) zoo.getPet(name);
                                             dog.walk();
                                             System.out.println(name + " will be walked next turn");
-                                        } catch (ClassCastException e) {
-                                            e.printStackTrace();
-                                            System.exit(1);
+                                        } else {
+                                            System.out.println("No tasks remain for this turn");
+                                            break;
                                         }
-                                        break;
-                                }
+                                    }
+                                    break;
                             }
-                        } else {
-                            System.out.println("No tasks remain for this turn");
-                            level = "main";
                         }
                     }
                     break;
